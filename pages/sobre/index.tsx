@@ -1,6 +1,7 @@
 import Script from "next/script";
 import { useState } from "react";
 import Link from "next/link";
+import Button from "../../Components/Button";
 
 const About = () => {
   const [count, setCount] = useState(0);
@@ -22,7 +23,7 @@ const About = () => {
           <a href="/sobre/pedro">Pedro</a>
         </li>
       </ul>
-      <button onClick={() => setCount((prev) => prev + 1)}>Aumentar</button>
+      <Button title="Aumentar" onClick={() => setCount((prev) => prev + 1)} />
       <Script
         src="https://google-analytics.com/analytics.js"
         strategy="afterInteractive"
