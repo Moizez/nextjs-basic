@@ -2,9 +2,33 @@ import { NextApiHandler } from "next";
 import prisma from "../../../libs/prisma";
 
 const handlerGet: NextApiHandler = async (req, res) => {
+  const { page, limit } = req.query;
+
+  let perPage = 3;
+  let skip = 0;
+
+  if (page) {
+    skip = (parseInt(page as string) - 1) * perPage;
+  }
+
   const users = await prisma.user.findMany({
+    skip,
+    take: perPage,
+
     where: {
-      role: "ADMIN",
+      active: true,
+      age: {
+        gte: 18,
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: false,
+      active: true,
+    },
+    orderBy: {
+      id: "asc",
     },
   });
 
@@ -14,11 +38,17 @@ const handlerGet: NextApiHandler = async (req, res) => {
 const handlerPost: NextApiHandler = async (req, res) => {
   const { name, email, active, role } = req.body;
 
-  const newUser = await prisma.user.create({
-    data: { name, email, active, role },
-  });
+  const newUser = await prisma.user
+    .create({
+      data: { name, email, active, role },
+    })
+    .catch((e) => {
+      console.log("ERROR: ", e);
 
-  res.status(201).json({ status: true, user: newUser });
+      res.json({ error: "Usuário não criado!" });
+    });
+
+  if (newUser) res.status(201).json({ status: true, user: newUser });
 };
 
 const handler: NextApiHandler = (req, res) => {
