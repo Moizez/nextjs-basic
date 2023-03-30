@@ -1,17 +1,18 @@
 import prisma from "../libs/prisma";
 
 export default {
-  getUsersPerPage: async (page: number) => {
-    let perPage = 10;
+  getUsersPerPage: async (page: number, limit: number = 3) => {
     let skip = 0;
 
     if (page) {
-      skip = (page - 1) * perPage;
+      skip = (page - 1) * limit;
     }
 
-    return await prisma.user.findMany({
+    const count = await prisma.user.count();
+
+    const user = await prisma.user.findMany({
       skip,
-      take: perPage,
+      take: limit,
 
       where: {
         active: true,
@@ -22,14 +23,26 @@ export default {
       select: {
         id: true,
         name: true,
-        email: false,
+        email: true,
         active: true,
       },
       orderBy: {
         id: "asc",
       },
     });
+
+    const data = {
+      data: user,
+      info: {
+        count,
+        status: true,
+        lastPage: count - skip <= limit,
+      },
+    };
+
+    return data;
   },
+
   addUser: async (
     name: string,
     email: string,

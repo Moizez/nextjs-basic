@@ -3,9 +3,9 @@ import prisma from "../../../libs/prisma";
 import requests from "../../../services/requests";
 
 const handlerGet: NextApiHandler = async (req, res) => {
-  const { page } = req.query;
-  const users = await requests.getUsersPerPage(parseInt(page as string));
-  res.json({ status: true, users });
+  const { page, limit } = req.query;
+  const users = await requests.getUsersPerPage(Number(page), Number(limit));
+  res.json(users);
 };
 
 const handlerPost: NextApiHandler = async (req, res) => {
