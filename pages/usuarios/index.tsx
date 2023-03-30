@@ -9,6 +9,7 @@ import axios from "axios";
 
 type Props = {
   users: TUser[];
+  count: number
 };
 
 const Usuarios = ({ users, count }: Props) => {

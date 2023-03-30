@@ -4,8 +4,11 @@ import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import Layout from "../Components/Layout";
 import example from "../public/example.jpg";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const Home: NextPage = () => {
+  const { data: session } = useSession();
+
   return (
     <Layout>
       <div className={styles.container}>
@@ -35,6 +38,14 @@ const Home: NextPage = () => {
         </Head>
 
         <main className={styles.main}>
+          {!session && <button onClick={() => signIn()}>Fazer login</button>}
+          {session && (
+            <>
+              Olá, {session.user?.name} de email: {session.user?.role}.
+              <button onClick={() => signOut()}>Sair</button>
+            </>
+          )}
+
           <h1 className={styles.title}>
             Welcome to <a href="https://nextjs.org">Next.js!</a>
           </h1>

@@ -56,6 +56,9 @@ export default {
   getUserById: async (id: number) => {
     return await prisma.user.findUnique({ where: { id } });
   },
+  getUserByEmail: async (email: string) => {
+    return await prisma.user.findFirst({ where: { email, active: true } });
+  },
   updateUser: async (id: number, name?: string, active?: string) => {
     const data: {
       name?: string;
