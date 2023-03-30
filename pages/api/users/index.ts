@@ -1,54 +1,21 @@
 import { NextApiHandler } from "next";
 import prisma from "../../../libs/prisma";
+import requests from "../../../services/requests";
 
 const handlerGet: NextApiHandler = async (req, res) => {
-  const { page, limit } = req.query;
-
-  let perPage = 3;
-  let skip = 0;
-
-  if (page) {
-    skip = (parseInt(page as string) - 1) * perPage;
-  }
-
-  const users = await prisma.user.findMany({
-    skip,
-    take: perPage,
-
-    where: {
-      active: true,
-      age: {
-        gte: 18,
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-      email: false,
-      active: true,
-    },
-    orderBy: {
-      id: "asc",
-    },
-  });
-
+  const { page } = req.query;
+  const users = await requests.getUsersPerPage(parseInt(page as string));
   res.json({ status: true, users });
 };
 
 const handlerPost: NextApiHandler = async (req, res) => {
   const { name, email, active, role } = req.body;
 
-  const newUser = await prisma.user
-    .create({
-      data: { name, email, active, role },
-    })
-    .catch((e) => {
-      console.log("ERROR: ", e);
+  const user = await requests.addUser(name, email, active, role).catch(() => {
+    res.json({ error: "Usuário já existe!" });
+  });
 
-      res.json({ error: "Usuário não criado!" });
-    });
-
-  if (newUser) res.status(201).json({ status: true, user: newUser });
+  if (user) res.status(201).json({ status: true, user});
 };
 
 const handler: NextApiHandler = (req, res) => {

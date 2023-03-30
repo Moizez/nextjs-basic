@@ -1,53 +1,23 @@
 import { NextApiHandler } from "next";
 import prisma from "../../../libs/prisma";
+import requests from "../../../services/requests";
 
 const handlerGet: NextApiHandler = async (req, res) => {
   const { id } = req?.query;
 
-  const user = await prisma.user.findUnique({
-    where: {
-      id: parseInt(id as string),
-    },
+  const user = await requests.getUserById(parseInt(id as string)).catch((e) => {
+    console.log("ERROR: ", e);
+    res.status(404).json({ error: "Usuário não encontrado!" });
   });
 
-  if (user) {
-    res.json({ status: true, user });
-    return;
-  }
-
-  res.status(404).json({ error: "Usuário não encontrado!" });
+  if (user) res.json({ status: true, user });
 };
 
 const handlerPut: NextApiHandler = async (req, res) => {
   const { id } = req?.query;
   const { name, active } = req?.body;
 
-  const data: {
-    name?: string;
-    active?: boolean;
-  } = {};
-
-  if (name) data.name = name;
-  if (active)
-    switch (active) {
-      case "true":
-      case "1":
-        data.active = true;
-        break;
-
-      case "false":
-      case "0":
-        data.active = false;
-        break;
-
-      default:
-        break;
-    }
-
-  const user = await prisma.user.update({
-    where: { id: parseInt(id as string) },
-    data,
-  });
+  const user = await requests.updateUser(Number(id), name, active);
 
   if (user) {
     res.json({ status: true, user });
@@ -60,15 +30,9 @@ const handlerPut: NextApiHandler = async (req, res) => {
 const handlerDelete: NextApiHandler = async (req, res) => {
   const { id } = req?.query;
 
-  const user = await prisma.user
-    .delete({
-      where: {
-        id: parseInt(id as string),
-      },
-    })
-    .catch(() => {
-      res.json({ error: "Usuário não encontrado!" });
-    });
+  const user = await requests.deleteUserById(Number(id)).catch(() => {
+    res.json({ error: "Usuário não encontrado!" });
+  });
 
   if (user) res.json({ status: true });
 };
